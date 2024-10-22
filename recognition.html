@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Recognition Memory Experiment</title>
+    <title>Recall Experiment (own)</title>
     <!-- Include jsPsych library and plugins using local paths -->
     <script src="jspsych/jspsych.js"></script>
     <script src="jspsych/plugins/plugin-html-keyboard-response.js"></script>
     <script src="jspsych/plugins/plugin-instructions.js"></script>
     <script src="jspsych/plugins/plugin-fullscreen.js"></script>
     <script src="jspsych/plugins/plugin-call-function.js"></script>
-    <script src="jspsych/plugins/plugin-html-button-response.js"></script>
     <!-- Include custom plugins -->
+    <script src="jspsych/custom-plugins/jspsych-free-recall.js"></script>
     <script src="jspsych/custom-plugins/jspsych-fixation.js"></script>
     <script src="jspsych/custom-plugins/jspsych-item-presentation.js"></script>
     <!-- Include CSS files -->
@@ -21,23 +21,33 @@
     /* Configuration Section */
     const config = {
       subjectID: 'sub-101', // Unique subject identifier
-      wordList: [
-        'apple', 'banana', 'orange', 'grape', 'pear',
-        'peach', 'plum', 'kiwi', 'mango', 'melon',
-        'lemon', 'lime', 'cherry', 'strawberry', 'blueberry',
-        'pineapple', 'papaya', 'apricot', 'blackberry', 'cranberry'
+      wordListOne: [
+        'Fire', 'Dog', 'Car', 'Ruby', 'Pen', 'Heart', 'Rose', 'Tree', 'Strawberry', 'Case',
+        'Cloud', 'Tomato', 'Apple', 'Water', 'Chair', 'Hand', 'Blood', 'Cherry', 'Book', 'Flame'
       ],
-      distractorList: [
-        'car', 'house', 'book', 'chair', 'computer',
-        'phone', 'table', 'lamp', 'shirt', 'pen',
-        'dog', 'cat', 'bird', 'tree', 'flower',
-        'river', 'mountain', 'cloud', 'sun', 'moon'
+      wordListTwo: [
+        'Blush', 'Beet', 'Cranberry', 'Table', 'Bag', 'Hot', 'Ribbon', 'Cat', 'Phone', 'Shirt',
+        'Pepper', 'Mars', 'Cup', 'Lipstick', 'Wine', 'Window', 'Star', 'Leaf', 'Shoe', 'Jam'
       ],
-      numTrials: 2,
-      numWordsPerTrial: 10,
-      numDistractorsPerTrial: 10,
-      wordTime: 1000,          // Time to display each word (ms)
+      wordListThree: [
+        'Plant', 'Sky', 'Scarlet', 'Pomegranate', 'Firetruck', 'Brick', 'Maroon', 'Door', 'Stoplight', 'Lamp',
+        'Sand', 'Lantern', 'Paper', 'Cardinal', 'Fork', 'Fish', 'Bird', 'Crimson', 'Flower', 'Grass'
+      ],
+      wordListFour: [
+        'Valentine', 'Fireplace', 'Chili', 'Cupcake', 'Moon', 'Doll', 'Rosebud', 'Treehouse', 'Pencil', 'Light',
+        'Rust', 'Bell', 'Raspberry', 'Coral', 'Candy', 'Sock', 'Wall', 'Sunset', 'Mirror', 'Sun'
+      ],
+      colorSchemes: [
+        { memorize: 'red', recall: 'red' },
+        { memorize: 'white', recall: 'red' },
+        { memorize: 'red', recall: 'white' },
+        { memorize: 'white', recall: 'white' }
+      ],
+      numTrials: 4,
+      numWordsPerTrial: 20,
+      wordTime: 2000,          // Time to display each word (ms)
       interWordTime: 0,        // Time between words (ms)
+      recallTime: 30000        // Time for free recall (ms)
     };
 
     // Initialize jsPsych
@@ -46,7 +56,7 @@
         // Process data to generate CSV
         var allData = jsPsych.data.get().values();
         var csvRows = [];
-        var headers = ['subject', 'list', 'trial_type', 'position', 'item', 'response', 'correct'];
+        var headers = ['subject', 'list', 'trial_type', 'position', 'item'];
         csvRows.push(headers.join(','));
 
         for (var i = 0; i < allData.length; i++) {
@@ -59,27 +69,26 @@
               trial.list,
               'study',
               trial.position,
-              trial.item,
-              '',
-              ''
+              trial.item
             ];
             csvRows.push(row.join(','));
-          } else if (trial.trial_type === 'html-button-response' && trial.phase === 'test') {
-            // Recognition test events
-            var position = trial.position;
-            var item = trial.item;
-            var response = trial.response_label;
-            var correct = trial.correct;
-            var row = [
-              trial.subject,
-              trial.list,
-              'test',
-              position,
-              item,
-              response,
-              correct
-            ];
-            csvRows.push(row.join(','));
+          } else if (trial.trial_type === 'free-recall') {
+            // Recall events
+            var recallWords = trial.recall_words;
+            if (recallWords) {
+              for (var j = 0; j < recallWords.length; j++) {
+                var item = recallWords[j];
+                var position = j + 1;
+                var row = [
+                  trial.subject,
+                  trial.list,
+                  'recall',
+                  position,
+                  item
+                ];
+                csvRows.push(row.join(','));
+              }
+            }
           }
         }
 
@@ -109,6 +118,9 @@
 
     var timeline = [];
 
+    var wordList = [config.wordListOne, config.wordListTwo, config.wordListThree, config.wordListFour];
+
+
     // Cursor control functions
     var cursor_off = {
       type: jsPsychCallFunction,
@@ -137,10 +149,9 @@
     const instructions = {
       type: jsPsychInstructions,
       pages: [
-        `<p>Welcome to the experiment!</p><p>In this experiment, you'll be asked to study and recognize words.</p><p>Press Next when you are ready to proceed.</p>`,
-        '<p>During the study phase, you will see a series of words presented one at a time.</p><p>Your goal is to remember these words for a later memory test.</p>',
-        '<p>After the list is presented, you will be shown words one at a time.</p><p>Your task is to indicate whether each word is <strong>"Old"</strong> (studied) or <strong>"New"</strong> (unstudied).</p>',
-        '<p>Press Next when you are ready to begin the experiment.</p>',
+        '<p>Welcome to the experiment!</p><p>You will see a list of 20 words. Each word will appear on the screen for 2 seconds.</p><p>Your task is to remember as many words as possible.</p>',
+        '<p>There are 4 trials in total. After each trial, you will be asked to type down all the words you can remember from the list.</p>',
+        '<p>Press Next when you are ready to proceed.</p>',
       ],
       show_clickable_nav: true,
       button_label_previous: 'Previous',
@@ -158,12 +169,22 @@
       button_label_next: 'Next'
     });
 
+
     // Experiment Trials
     for (let trial = 0; trial < config.numTrials; trial++) {
       let listNumber = trial + 1;
 
-      // Randomly select words for this trial
-      let trialWords = jsPsych.randomization.sampleWithoutReplacement(config.wordList, config.numWordsPerTrial);
+      // Randomly select a word list and a color scheme for this trial
+      let trialWords = jsPsych.randomization.sampleWithoutReplacement(wordLists, 1)[0];
+      let colorScheme = jsPsych.randomization.sampleWithoutReplacement(config.colorSchemes, 1)[0];
+
+      // Set memorization background color
+      timeline.push({
+        type: jsPsychCallFunction,
+        func: function() {
+          document.body.style.backgroundColor = colorScheme.memorize;
+        }
+      });
 
       timeline.push(cursor_off);
 
@@ -196,56 +217,35 @@
         timeline.push(studyTrial);
       }
 
-      timeline.push(cursor_on);
-
-      // Instructions before Test Phase (updated to be concise)
+      // Set recall background color
       timeline.push({
-        type: jsPsychInstructions,
-        pages: [
-          `<p>You have completed the study phase for list ${listNumber}.</p>
-          <p>In the test phase, you will see words one at a time.</p>
-          <p>If you studied the word, press <strong>"Old"</strong>.</p>
-          <p>If the word is unstudied, press <strong>"New"</strong>.</p>`
-        ],
-        show_clickable_nav: true,
-        button_label_next: 'Next'
+        type: jsPsychCallFunction,
+        func: function() {
+          document.body.style.backgroundColor = colorScheme.recall;
+        }
       });
 
-      // Test Phase (Recognition)
-      let distractorWords = jsPsych.randomization.sampleWithoutReplacement(config.distractorList, config.numDistractorsPerTrial);
-      let testWords = jsPsych.randomization.shuffle(trialWords.concat(distractorWords));
+      // Free Recall Phase
+      let recallPhase = {
+        type: jsPsychFreeRecall,
+        prompt: '<p>Recall the items:</p>',
+        maximum_recall_time: config.recallTime,
+        data: {
+          subject: config.subjectID,
+          list: listNumber,
+          trial_type: 'recall'
+        }
+      };
+      timeline.push(recallPhase);
 
-      for (let i = 0; i < testWords.length; i++) {
-        let word = testWords[i];
-        let position = i + 1;
-
-        let testTrial = {
-          type: jsPsychHtmlButtonResponse,
-          stimulus: `<p style="font-size: 48px;">${word}</p>`,
-          choices: ['Old', 'New'],
-          data: {
-            subject: config.subjectID,
-            list: listNumber,
-            trial_type: 'test',
-            position: position,
-            item: word,
-            phase: 'test',
-            correct_response: trialWords.includes(word) ? 'Old' : 'New'
-          },
-          on_finish: function(data) {
-            data.response_label = data.response == 0 ? 'Old' : 'New';
-            data.correct = data.response_label === data.correct_response;
-          }
-        };
-        timeline.push(testTrial);
-      }
+      timeline.push(cursor_on);
 
       // Break between trials or end of experiment message
       if (trial < config.numTrials - 1) {
         let breakScreen = {
           type: jsPsychInstructions,
           pages: [
-            `<p>You have completed list ${listNumber} of ${config.numTrials}.</p><p>When you're ready for the next list, press Next.</p>`
+            `<p>You've completed trial ${listNumber} of ${config.numTrials}.</p><p>When you're ready for the next trial, press Next.</p>`
           ],
           show_clickable_nav: true,
           button_label_next: 'Next'
