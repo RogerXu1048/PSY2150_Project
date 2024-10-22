@@ -11,5 +11,5 @@ Welcome to the jsPsych2150 repository! This repository contains demos of cogniti
 The experiments are hosted on GitHub Pages and can be accessed via the following links:
 
 -	[Free Recall Experiment](https://RogerXu1048.github.io/PSY2150_Project/free_recall.html)
--	[Recognition Memory Experiment](https://RogerXu1048.github.io/PSY2150_Project/recognition.html)
+-	[Priming Experiment](https://RogerXu1048.github.io/PSY2150_Project/priming.html)
 -	[Image Recognition Experiment](https://githubpsyche.github.io/jspsych2150/image_recognition.html)
