@@ -37,6 +37,7 @@
         'Valentine', 'Fireplace', 'Chili', 'Cupcake', 'Moon', 'Doll', 'Rosebud', 'Treehouse', 'Pencil', 'Light',
         'Rust', 'Bell', 'Raspberry', 'Coral', 'Candy', 'Sock', 'Wall', 'Sunset', 'Mirror', 'Sun'
       ],
+
       colorSchemes: [
         { memorize: 'red', recall: 'red' },
         { memorize: 'white', recall: 'red' },
@@ -175,7 +176,7 @@
       let listNumber = trial + 1;
 
       // Randomly select a word list and a color scheme for this trial
-      let trialWords = jsPsych.randomization.sampleWithoutReplacement(wordLists, 1)[0];
+      let trialWords = jsPsych.randomization.sampleWithoutReplacement(wordList, 1)[0];
       let colorScheme = jsPsych.randomization.sampleWithoutReplacement(config.colorSchemes, 1)[0];
 
       // Set memorization background color
