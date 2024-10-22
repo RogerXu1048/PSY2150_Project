@@ -46,9 +46,9 @@
       ],
       numTrials: 4,
       numWordsPerTrial: 20,
-      wordTime: 200,          // Time to display each word (ms)
+      wordTime: 2000,          // Time to display each word (ms)
       interWordTime: 0,        // Time between words (ms)
-      recallTime: 300        // Time for free recall (ms)
+      recallTime: 30000        // Time for free recall (ms)
     };
 
     // Initialize jsPsych
@@ -170,14 +170,17 @@
       button_label_next: 'Next'
     });
 
+    // Sample four word lists and four color schemes before the loop
+    let sampledWordLists = jsPsych.randomization.sampleWithoutReplacement(wordList, config.numTrials);
+    let sampledColorSchemes = jsPsych.randomization.sampleWithoutReplacement(config.colorSchemes, config.numTrials);
 
     // Experiment Trials
     for (let trial = 0; trial < config.numTrials; trial++) {
       let listNumber = trial + 1;
-
-      // Randomly select a word list and a color scheme for this trial
-      let trialWords = jsPsych.randomization.sampleWithoutReplacement(wordList, 1)[0];
-      let colorScheme = jsPsych.randomization.sampleWithoutReplacement(config.colorSchemes, 1)[0];
+      
+      // Access the pre-sampled word list and color scheme for this trial
+      let trialWords = sampledWordLists[trial];
+      let colorScheme = sampledColorSchemes[trial];
 
       // Set memorization background color
       timeline.push({
