@@ -57,7 +57,7 @@
         // Process data to generate CSV
         var allData = jsPsych.data.get().values();
         var csvRows = [];
-        var headers = ['subject', 'list', 'trial_type', 'position', 'item'];
+        var headers = ['subject', 'list', 'trial_type', 'position', 'item', 'correct'];
         csvRows.push(headers.join(','));
 
         for (var i = 0; i < allData.length; i++) {
@@ -70,22 +70,27 @@
               trial.list,
               'study',
               trial.position,
-              trial.item
+              trial.item,
+              '',
+              ''
             ];
             csvRows.push(row.join(','));
           } else if (trial.trial_type === 'free-recall') {
             // Recall events
             var recallWords = trial.recall_words;
+            var studyWords = trial.study_words;
             if (recallWords) {
               for (var j = 0; j < recallWords.length; j++) {
                 var item = recallWords[j];
                 var position = j + 1;
+                var isCorrect = isWordInList(item, studyWords);
                 var row = [
                   trial.subject,
                   trial.list,
                   'recall',
                   position,
-                  item
+                  item,
+                  isCorrect
                 ];
                 csvRows.push(row.join(','));
               }
@@ -116,6 +121,19 @@
         displayElement.appendChild(downloadButton);
       }
     });
+
+    // Function to check if recalled word is in the study list
+    function isWordInList(recalledWord, wordList) {
+      if (!recalledWord || !wordList) {
+        return '';
+      }
+      // Clean and standardize recalled word
+      recalledWord = recalledWord.trim().toLowerCase();
+      // Check if recalled word is in the word list
+      return wordList.some(function(word) {
+        return recalledWord === word.trim().toLowerCase();
+      });
+    }
 
     var timeline = [];
 
@@ -237,7 +255,8 @@
         data: {
           subject: config.subjectID,
           list: listNumber,
-          trial_type: 'recall'
+          trial_type: 'recall',
+          study_words: trialWords,
         }
       };
       timeline.push(recallPhase);
