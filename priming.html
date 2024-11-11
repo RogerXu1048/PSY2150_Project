@@ -57,7 +57,7 @@
         // Process data to generate CSV
         var allData = jsPsych.data.get().values();
         var csvRows = [];
-        var headers = ['subject', 'list', 'trial_type', 'memorize_color', 'recall_color', 'position', 'item', 'correct'];
+        var headers = ['subject', 'list', 'trial_type', 'position', 'item', 'correct', 'memorize_color', 'recall_color'];
         csvRows.push(headers.join(','));
 
         for (var i = 0; i < allData.length; i++) {
