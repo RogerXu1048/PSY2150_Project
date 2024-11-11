@@ -57,11 +57,15 @@
         // Process data to generate CSV
         var allData = jsPsych.data.get().values();
         var csvRows = [];
-        var headers = ['subject', 'list', 'trial_type', 'position', 'item', 'correct'];
+        var headers = ['subject', 'list', 'trial_type', 'memorize_color', 'recall_color', 'position', 'item', 'correct'];
         csvRows.push(headers.join(','));
 
         for (var i = 0; i < allData.length; i++) {
           var trial = allData[i];
+
+          // Extract the color scheme used during this trial
+          var memorizeColor = trial.memorize_color || '';
+          var recallColor = trial.recall_color || '';
 
           if (trial.trial_type === 'item-presentation') {
             // Study events
@@ -72,7 +76,8 @@
               trial.position,
               trial.item,
               '',
-              ''
+              memorizeColor,
+              recallColor
             ];
             csvRows.push(row.join(','));
           } else if (trial.trial_type === 'free-recall') {
@@ -90,7 +95,9 @@
                   'recall',
                   position,
                   item,
-                  isCorrect
+                  isCorrect,
+                  memorizeColor,
+                  recallColor
                 ];
                 csvRows.push(row.join(','));
               }
@@ -233,7 +240,9 @@
             list: listNumber,
             trial_type: 'study',
             position: position,
-            item: word
+            item: word,
+            memorize_color: colorScheme.memorize,
+            recall_color: colorScheme.recall
           }
         };
         timeline.push(studyTrial);
@@ -257,6 +266,8 @@
           list: listNumber,
           trial_type: 'recall',
           study_words: trialWords,
+          memorize_color: colorScheme.memorize,
+          recall_color: colorScheme.recall
         }
       };
       timeline.push(recallPhase);
